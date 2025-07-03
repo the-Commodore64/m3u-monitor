@@ -92,23 +92,23 @@
 
 <div id="stream-grid">
     {% for stream in streams %}
-    <div class="stream-container">
-        <div class="stream-header" onclick="toggleChart(this)">
-            {% if stream.logo_url %}
-                <img src="{{ stream.logo_url }}" alt="logo" class="stream-logo" onerror="this.style.display='none'">
-            {% else %}
-                <div class="stream-logo" style="width: 40px;"></div>
-            {% endif %}
-            <h2 class="stream-title">{{ stream.name }}</h2>
-            <div class="stream-frame">
-                <img src="{{ url_for('static', filename='frames/' + stream.frame_filename) }}" alt="Latest frame" onerror="this.style.display='none'">
+        <div class="stream-container">
+            <div class="stream-header" onclick="toggleChart(this)">
+                {% if stream.logo_url %}
+                    <img src="{{ stream.logo_url }}" alt="logo" class="stream-logo" onerror="this.style.display='none'">
+                {% else %}
+                    <div class="stream-logo" style="width: 40px;"></div>
+                {% endif %}
+                <h2 class="stream-title">{{ stream.name }}</h2>
+                <div class="stream-frame">
+                    <img src="{{ url_for('static', filename='frames/' + stream.frame_filename) }}" alt="Latest frame" onerror="this.style.display='none'">
+                </div>
+                <i class="fas fa-chevron-down" style="margin-left: 15px;"></i>
             </div>
-            <i class="fas fa-chevron-down" style="margin-left: 15px;"></i>
+            <div class="chart-content">
+                <div id="chart-{{ stream.id }}" class="chart">Loading chart...</div>
+            </div>
         </div>
-        <div class="chart-content">
-            <div id="chart-{{ stream.id }}" class="chart">Loading chart...</div>
-        </div>
-    </div>
     {% else %}
         <p style="color: var(--text);">No stream data found yet. Awaiting first check.</p>
     {% endfor %}
