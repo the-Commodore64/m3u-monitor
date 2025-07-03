@@ -118,6 +118,53 @@
 <script>
     const loadedCharts = new Set();
 
+    function getPlotlyLayout(theme, streamName) {
+        const isDark = theme === "dark";
+        return {
+            title: {
+                text: `Stream Health: ${streamName}`,
+                font: { color: isDark ? "#e0e0e0" : "#222" }
+            },
+            paper_bgcolor: isDark ? "#1e1e1e" : "#ffffff",
+            plot_bgcolor: isDark ? "#1e1e1e" : "#ffffff",
+            xaxis: {
+                domain: [0.1, 0.9],
+                tickfont: { color: isDark ? "#ccc" : "#222" },
+                gridcolor: isDark ? "#333" : "#ddd"
+            },
+            yaxis: {
+                title: 'Resolution (p)',
+                titlefont: { color: 'rgb(55, 126, 184)' },
+                tickfont: { color: 'rgb(55, 126, 184)' },
+                gridcolor: isDark ? "#333" : "#ddd"
+            },
+            yaxis2: {
+                title: 'Frame Rate (fps)',
+                titlefont: { color: 'rgb(228, 26, 28)' },
+                tickfont: { color: 'rgb(228, 26, 28)' },
+                overlaying: 'y',
+                side: 'right'
+            },
+            yaxis3: {
+                title: 'Load Time (ms)',
+                titlefont: { color: 'rgb(77, 175, 74)' },
+                tickfont: { color: 'rgb(77, 175, 74)' },
+                overlaying: 'y',
+                side: 'left',
+                position: 0.0,
+                anchor: 'free'
+            },
+            legend: {
+                x: 0.5,
+                y: -0.2,
+                xanchor: 'center',
+                orientation: 'h',
+                font: { color: isDark ? "#ccc" : "#222" }
+            },
+            margin: { l: 100, r: 50, t: 50, b: 50 }
+        };
+    }
+
     function createChart(sourceId, streamName, chartDivId) {
         if (loadedCharts.has(chartDivId)) return;
         loadedCharts.add(chartDivId);
@@ -157,33 +204,8 @@
                 line: { color: 'rgb(77, 175, 74)' }
             };
 
-            const layout = {
-                title: `Stream Health: ${streamName}`,
-                xaxis: { domain: [0.1, 0.9] },
-                yaxis: {
-                    title: 'Resolution (p)',
-                    titlefont: { color: 'rgb(55, 126, 184)' },
-                    tickfont: { color: 'rgb(55, 126, 184)' }
-                },
-                yaxis2: {
-                    title: 'Frame Rate (fps)',
-                    titlefont: { color: 'rgb(228, 26, 28)' },
-                    tickfont: { color: 'rgb(228, 26, 28)' },
-                    overlaying: 'y',
-                    side: 'right'
-                },
-                yaxis3: {
-                    title: 'Load Time (ms)',
-                    titlefont: { color: 'rgb(77, 175, 74)' },
-                    tickfont: { color: 'rgb(77, 175, 74)' },
-                    overlaying: 'y',
-                    side: 'left',
-                    position: 0.0,
-                    anchor: 'free'
-                },
-                legend: { x: 0.5, y: -0.2, xanchor: 'center', orientation: 'h' },
-                margin: { l: 100, r: 50, t: 50, b: 50 }
-            };
+            const theme = document.documentElement.getAttribute("data-theme") || "light";
+            const layout = getPlotlyLayout(theme, streamName);
 
             Plotly.newPlot(chartDivId, [resolutionTrace, framerateTrace, loadTimeTrace], layout, {responsive: true});
         });
