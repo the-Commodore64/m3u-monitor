@@ -4,25 +4,135 @@
 
 {% block content %}
 <style>
-    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px; }
-    .source-card { background: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
-    .card-header { padding: 15px 20px; display: flex; align-items: center; border-bottom: 1px solid #eee; cursor: pointer; }
-    .status-light { width: 15px; height: 15px; border-radius: 50%; margin-right: 15px; flex-shrink: 0; }
-    .status-green { background-color: #28a745; } .status-orange { background-color: #fd7e14; }
-    .status-red { background-color: #dc3545; } .status-grey { background-color: #6c757d; }
-    .card-title { font-size: 1.2em; font-weight: 600; flex-grow: 1; }
-    .card-body { padding: 0 20px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s ease-out; }
-    .card-body.expanded { max-height: 500px; /* Adjust as needed */ padding: 15px 20px; }
-    .stream-list { list-style: none; padding: 0; margin: 0; }
-    .stream-list li { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f1f1; }
-    .stream-list li:last-child { border-bottom: none; }
-    .stream-list .status-light { width: 10px; height: 10px; margin-right: 10px; }
-    /* <<<<<<< NEW - Styling for stream logos >>>>>>>>> */
-    .stream-logo { width: 24px; height: 24px; margin-right: 10px; border-radius: 4px; object-fit: contain; background-color: #f8f9fa; }
-    .card-footer { background-color: #f8f9fa; padding: 10px 20px; border-top: 1px solid #eee; text-align: right; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
-    .btn { padding: 5px 10px; border-radius: 5px; text-decoration: none; color: white; font-size: 0.9em; margin-left: 5px; border: none; cursor: pointer; }
-    .btn-edit { background-color: #ffc107; color: #212529; } .btn-delete { background-color: #dc3545; }
-    .btn-details { background-color: #007bff; } .delete-form { display: inline; }
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 20px;
+    }
+
+    .source-card {
+        background: var(--card-bg);
+        color: var(--text);
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+        align-self: start;
+    }
+
+    .card-header {
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid var(--border);
+        cursor: pointer;
+        background-color: var(--bg);
+    }
+
+    .status-light {
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+    .status-green { background-color: #28a745; }
+    .status-orange { background-color: #fd7e14; }
+    .status-red { background-color: #dc3545; }
+    .status-grey { background-color: #6c757d; }
+
+    .card-title {
+        font-size: 1.2em;
+        font-weight: 600;
+        flex-grow: 1;
+    }
+
+    .card-body {
+        padding: 0 20px;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+        background-color: var(--card-bg);
+    }
+
+    .card-body.expanded {
+        max-height: 400px;
+        padding: 15px 20px;
+        overflow-y: auto;
+    }
+
+    .stream-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .stream-list li {
+        display: flex;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+    }
+
+    .stream-list li:last-child {
+        border-bottom: none;
+    }
+
+    .stream-list .status-light {
+        width: 10px;
+        height: 10px;
+        margin-right: 10px;
+    }
+
+    .stream-logo {
+        width: 24px;
+        height: 24px;
+        margin-right: 10px;
+        border-radius: 4px;
+        object-fit: contain;
+        background-color: var(--bg);
+    }
+
+    .card-footer {
+        background-color: var(--bg);
+        padding: 10px 20px;
+        border-top: 1px solid var(--border);
+        text-align: right;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+    .btn {
+        padding: 5px 10px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 0.9em;
+        margin-left: 5px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-edit {
+        background-color: #ffc107;
+        color: #212529;
+    }
+
+    .btn-delete {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-details {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .delete-form {
+        display: inline;
+    }
 </style>
 
 <h1>Overview Dashboard</h1>
@@ -34,41 +144,40 @@
         {% set percentage = (successful / total * 100) if total > 0 else -1 %}
         {% set status_color = 'green' if percentage >= 95 else 'orange' if percentage >= 50 else 'red' if percentage >= 0 else 'grey' %}
 
-    <div class="source-card">
-        <div class="card-header" onclick="toggleCard(this)">
-            <div class="status-light status-{{ status_color }}"></div>
-            <div class="card-title">{{ data.name }}</div>
-            <div class="availability-summary">
-                {% if total > 0 %}{{ "%.1f"|format(percentage) }}%{% else %}N/A{% endif %}
+        <div class="source-card">
+            <div class="card-header" onclick="toggleCard(this)">
+                <div class="status-light status-{{ status_color }}"></div>
+                <div class="card-title">{{ data.name }}</div>
+                <div class="availability-summary">
+                    {% if total > 0 %}{{ "%.1f"|format(percentage) }}%{% else %}N/A{% endif %}
+                </div>
+                <i class="fas fa-chevron-down" style="margin-left: 15px;"></i>
             </div>
-            <i class="fas fa-chevron-down" style="margin-left: 15px;"></i>
+            <div class="card-body">
+                <ul class="stream-list">
+                    {% for stream in data.streams %}
+                        <li>
+                            <div class="status-light status-{{ 'green' if stream.is_available else 'red' }}"></div>
+                            {% if stream.logo_url %}
+                                <img src="{{ stream.logo_url }}" alt="logo" class="stream-logo" onerror="this.style.display='none'">
+                            {% else %}
+                                <div class="stream-logo" style="width: 24px;"></div>
+                            {% endif %}
+                            {{ stream.stream_name }}
+                        </li>
+                    {% else %}
+                        <li>No individual stream data available.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('m3u_dashboard', source_id=data.id) }}" class="btn btn-details"><i class="fas fa-chart-line"></i> Details</a>
+                <a href="{{ url_for('edit_m3u', source_id=data.id) }}" class="btn btn-edit"><i class="fas fa-pencil-alt"></i> Edit</a>
+                <form action="{{ url_for('delete_m3u', source_id=data.id) }}" method="post" class="delete-form" onsubmit="return confirm('Are you sure?');">
+                    <button type="submit" class="btn btn-delete"><i class="fas fa-trash"></i> Delete</button>
+                </form>
+            </div>
         </div>
-        <div class="card-body">
-            <ul class="stream-list">
-                {% for stream in data.streams %}
-                    <li>
-                        <div class="status-light status-{{ 'green' if stream.is_available else 'red' }}"></div>
-                        <!-- <<<<<<< MODIFIED - Display stream logo >>>>>>>>> -->
-                        {% if stream.logo_url %}
-                            <img src="{{ stream.logo_url }}" alt="logo" class="stream-logo" onerror="this.style.display='none'">
-                        {% else %}
-                            <div class="stream-logo" style="width: 24px;"></div> <!-- Placeholder for alignment -->
-                        {% endif %}
-                        {{ stream.stream_name }}
-                    </li>
-                {% else %}
-                    <li>No individual stream data available.</li>
-                {% endfor %}
-            </ul>
-        </div>
-        <div class="card-footer">
-            <a href="{{ url_for('m3u_dashboard', source_id=data.id) }}" class="btn btn-details"><i class="fas fa-chart-line"></i> Details</a>
-            <a href="{{ url_for('edit_m3u', source_id=data.id) }}" class="btn btn-edit"><i class="fas fa-pencil-alt"></i> Edit</a>
-            <form action="{{ url_for('delete_m3u', source_id=data.id) }}" method="post" class="delete-form" onsubmit="return confirm('Are you sure?');">
-                <button type="submit" class="btn btn-delete"><i class="fas fa-trash"></i> Delete</button>
-            </form>
-        </div>
-    </div>
     {% else %}
         <p>No M3U sources added. <a href="{{ url_for('add_m3u') }}">Add one to get started.</a></p>
     {% endfor %}
