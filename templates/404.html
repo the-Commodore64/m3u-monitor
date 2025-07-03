@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found{% endblock %}
+
+{% block content %}
+    <style>
+        .not-found-container {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .not-found-container h1 {
+            font-size: 3em;
+            color: #dc3545;
+        }
+        .not-found-container p {
+            font-size: 1.2em;
+            color: #6c757d;
+        }
+        .not-found-container a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .not-found-container a:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <div class="not-found-container">
+        <h1>404 - Not Found</h1>
+        <p>The page you are looking for does not exist. It might have been moved or deleted.</p>
+        <p>Perhaps the M3U source you were viewing was removed.</p>
+        <!-- <<<<<<< CORRECTED - Changed url_for('index') to url_for('overview_dashboard') >>>>>>>>> -->
+        <a href="{{ url_for('overview_dashboard') }}">Go to the Main Dashboard</a>
+    </div>
+{% endblock %}
