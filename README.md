@@ -101,6 +101,31 @@ services:
       - FFPROBE_TIMEOUT=30     # Timeout for stream probes in seconds (Default: 15)
 ```
 
+Already have a docker-compose file? No worries, save the m3u-monitor.Dockerfile in the same location, and add this to your docker-compose.yaml.
+
+```
+m3u-monitor:
+    build:
+      context: . # Assumes the Dockerfile is in the same directory as the docker-compose.yml
+      dockerfile: m3u-monitor.Dockerfile # Explicitly specifies the Dockerfile name (if different)
+    container_name: m3u-moniter
+    environment:
+      - PUID=1000             # Not required. Change as you like
+      - PGID=1000             # Not required. Change as you like
+      - PORT=2029
+      - TEST_RATE=1800        # Sets the check interval to 1,800 seconds (30 minutes).
+      - PORT=2029             # Sets the port the application runs on Must match the container port.
+      - FFPROBE_TIMEOUT=15    # Sets the timeout for each stream check.
+      - TZ=COUNTRY/CITY
+    restart: unless-stopped
+    ports:
+      - "2029:2029"           # If using gluetun - add this to the gluetun ports, not here and uncomment the lines below.
+    #depends_on:
+    #  - gluetun
+    #network_mode: "service:gluetun"
+
+```
+
 ### Step 3: Build and Start the Container
 Open a terminal in the root of the project directory and run the following command:
 
