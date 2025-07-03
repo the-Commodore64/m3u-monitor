@@ -96,9 +96,9 @@ services:
   monitor:
     # ...
     environment:
-      - TEST_RATE=600          # Check interval in seconds (Default: 600 = 10 minutes)
+      - TEST_RATE=1800         # Check interval in seconds (Default: 1800 = 30 minutes)
       - PORT=2029              # Port the web interface runs on (Default: 2029)
-      - FFPROBE_TIMEOUT=30     # Timeout for stream probes in seconds (Default: 15)
+      - FFPROBE_TIMEOUT=30     # Timeout for stream probes in seconds (Default: 30)
 ```
 
 Already have a docker-compose file? No worries, save the m3u-monitor.Dockerfile in the same location, and add this to your docker-compose.yaml.
