@@ -4,15 +4,76 @@
 
 {% block content %}
 <style>
-    .compare-form { max-width: 900px; margin: 20px auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .form-row { display: flex; gap: 20px; align-items: flex-end; margin-bottom: 20px; }
-    .form-group { flex: 1; }
-    label { display: block; margin-bottom: 8px; font-weight: bold; }
-    select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-    .btn-submit { background-color: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-    #compare-chart { width: 100%; height: 500px; margin-top: 30px; }
-    /* <<<<<<< NEW - Styling for logo previews next to dropdowns >>>>>>>>> */
-    .logo-preview { width: 40px; height: 40px; margin-left: 10px; border-radius: 5px; background-color: #f8f9fa; border: 1px solid #dee2e6; object-fit: contain; vertical-align: middle; }
+    .compare-form {
+        max-width: 900px;
+        margin: 20px auto;
+        padding: 20px;
+        background: var(--card-bg);
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border: 1px solid var(--border);
+    }
+
+    .form-row {
+        display: flex;
+        gap: 20px;
+        align-items: flex-end;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .form-group {
+        flex: 1;
+        min-width: 300px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        background-color: var(--bg);
+        color: var(--text);
+        font-size: 1em;
+    }
+
+    .btn-submit {
+        background-color: #007bff;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .btn-submit:hover {
+        background-color: #0056b3;
+    }
+
+    #compare-chart {
+        width: 100%;
+        height: 500px;
+        margin-top: 30px;
+    }
+
+    .logo-preview {
+        width: 40px;
+        height: 40px;
+        margin-left: 10px;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        object-fit: contain;
+        vertical-align: middle;
+    }
 </style>
 
 <h1>Compare Stream Performance</h1>
@@ -27,8 +88,7 @@
                     {% for source in all_streams %}
                         <optgroup label="{{ source.source_name }}">
                             {% for stream in source.streams %}
-                                <!-- <<<<<<< MODIFIED - Add data-logo attribute >>>>>>>>> -->
-                                <option value="{{ source.source_id }}:{{ stream.stream_name }}" 
+                                <option value="{{ source.source_id }}:{{ stream.stream_name }}"
                                         data-logo="{{ stream.logo_url or '' }}"
                                         {{ 'selected' if s1_name == stream.stream_name and s1_source_id == source.source_id|string }}>
                                     {{ stream.stream_name }}
@@ -48,8 +108,7 @@
                     {% for source in all_streams %}
                         <optgroup label="{{ source.source_name }}">
                             {% for stream in source.streams %}
-                                <!-- <<<<<<< MODIFIED - Add data-logo attribute >>>>>>>>> -->
-                                <option value="{{ source.source_id }}:{{ stream.stream_name }}" 
+                                <option value="{{ source.source_id }}:{{ stream.stream_name }}"
                                         data-logo="{{ stream.logo_url or '' }}"
                                         {{ 'selected' if s2_name == stream.stream_name and s2_source_id == source.source_id|string }}>
                                     {{ stream.stream_name }}
@@ -62,7 +121,7 @@
             </div>
         </div>
     </div>
-    <button type="submit" class="btn-submit">Compare</button>
+    <button type="submit" class="btn-submit"><i class="fas fa-balance-scale"></i> Compare</button>
 </form>
 
 {% if s1_name and s2_name %}
@@ -70,7 +129,6 @@
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Initial logo update on page load for pre-selected streams
         updateLogo('stream1');
         updateLogo('stream2');
 
@@ -80,21 +138,32 @@
         Promise.all([fetch(s1_data_url).then(r => r.json()), fetch(s2_data_url).then(r => r.json())])
             .then(([data1, data2]) => {
                 const trace1 = {
-                    x: data1.timestamps, y: data1.load_times.map((lt, i) => data1.availability[i] ? lt : null),
-                    name: `{{ s1_name }} (Load Time)`, type: 'scatter', mode: 'lines+markers'
+                    x: data1.timestamps,
+                    y: data1.load_times.map((lt, i) => data1.availability[i] ? lt : null),
+                    name: `{{ s1_name }} (Load Time)`,
+                    type: 'scatter',
+                    mode: 'lines+markers'
                 };
                 const trace2 = {
-                    x: data2.timestamps, y: data2.load_times.map((lt, i) => data2.availability[i] ? lt : null),
-                    name: `{{ s2_name }} (Load Time)`, type: 'scatter', mode: 'lines+markers'
+                    x: data2.timestamps,
+                    y: data2.load_times.map((lt, i) => data2.availability[i] ? lt : null),
+                    name: `{{ s2_name }} (Load Time)`,
+                    type: 'scatter',
+                    mode: 'lines+markers'
                 };
-                const layout = { title: 'Load Time Comparison', yaxis: { title: 'Load Time (ms)' } };
-                Plotly.newPlot('compare-chart', [trace1, trace2], layout, {responsive: true});
+                const layout = {
+                    title: 'Load Time Comparison',
+                    yaxis: { title: 'Load Time (ms)' },
+                    paper_bgcolor: 'transparent',
+                    plot_bgcolor: 'transparent',
+                    font: { color: getComputedStyle(document.body).color }
+                };
+                Plotly.newPlot('compare-chart', [trace1, trace2], layout, { responsive: true });
             });
     });
 </script>
 {% endif %}
 
-<!-- <<<<<<< NEW - JavaScript to update logo previews >>>>>>>>> -->
 <script>
     function updateLogo(selectId) {
         const selectElement = document.getElementById(selectId);

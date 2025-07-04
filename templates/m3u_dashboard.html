@@ -4,58 +4,169 @@
 
 {% block content %}
 <style>
-    .stream-container { background-color: #fff; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .stream-header { padding: 15px 20px; display: flex; align-items: center; cursor: pointer; border-bottom: 1px solid #eee; }
-    /* <<<<<<< NEW - Styling for stream logos >>>>>>>>> */
-    .stream-logo { width: 40px; height: 40px; margin-right: 15px; border-radius: 5px; object-fit: contain; background-color: #f8f9fa; }
-    .stream-title { font-size: 1.5em; font-weight: 500; flex-grow: 1; }
-    .stream-frame img { max-width: 160px; border-radius: 5px; border: 1px solid #ccc; margin-left: 20px; }
-    .chart-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; border-top: 1px solid #eee; }
-    .chart-content.expanded { max-height: 500px; }
-    .chart { width: 100%; height: 450px; padding: 15px; box-sizing: border-box; }
-    .controls { margin-bottom: 20px; }
-    .btn { padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer; }
-    .btn-primary { background-color: #007bff; color: white; }
+    .stream-container {
+        background-color: var(--card-bg);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .stream-header {
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .stream-logo {
+        width: 40px;
+        height: 40px;
+        margin-right: 15px;
+        border-radius: 5px;
+        object-fit: contain;
+        background-color: var(--bg);
+    }
+
+    .stream-title {
+        font-size: 1.5em;
+        font-weight: 500;
+        flex-grow: 1;
+    }
+
+    .stream-frame img {
+        max-width: 160px;
+        border-radius: 5px;
+        border: 1px solid var(--border);
+        margin-left: 20px;
+    }
+
+    .chart-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease-out;
+        background-color: var(--bg);
+        border-top: 1px solid var(--border);
+        color: var(--text);
+    }
+
+    .chart-content.expanded {
+        max-height: 500px;
+    }
+
+    .chart {
+        width: 100%;
+        height: 450px;
+        padding: 15px;
+        box-sizing: border-box;
+    }
+
+    .controls {
+        margin-bottom: 20px;
+    }
+
+    .btn {
+        padding: 8px 15px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        background-color: #007bff;
+        color: white;
+        margin-right: 5px;
+    }
+
+    .btn:hover {
+        opacity: 0.9;
+    }
 </style>
 
 <h1>Dashboard for: {{ source.name }}</h1>
-<p style="color: #555;">URL: {{ source.url }}</p>
+<p style="color: var(--text);">URL: {{ source.url }}</p>
 
 <div class="controls">
-    <button class="btn btn-primary" onclick="toggleAll(true)">Expand All</button>
-    <button class="btn btn-primary" onclick="toggleAll(false)">Collapse All</button>
+    <button class="btn" onclick="toggleAll(true)">Expand All</button>
+    <button class="btn" onclick="toggleAll(false)">Collapse All</button>
 </div>
 
 <div id="stream-grid">
     {% for stream in streams %}
-    <div class="stream-container">
-        <div class="stream-header" onclick="toggleChart(this)">
-            <!-- <<<<<<< MODIFIED - Display stream logo in header >>>>>>>>> -->
-            {% if stream.logo_url %}
-                <img src="{{ stream.logo_url }}" alt="logo" class="stream-logo" onerror="this.style.display='none'">
-            {% else %}
-                <div class="stream-logo" style="width: 40px;"></div> <!-- Placeholder for alignment -->
-            {% endif %}
-            <h2 class="stream-title">{{ stream.name }}</h2>
-            <div class="stream-frame">
-                <img src="{{ url_for('static', filename='frames/' + stream.frame_filename) }}" alt="Latest frame" onerror="this.style.display='none'">
+        <div class="stream-container">
+            <div class="stream-header" onclick="toggleChart(this)">
+                {% if stream.logo_url %}
+                    <img src="{{ stream.logo_url }}" alt="logo" class="stream-logo" onerror="this.style.display='none'">
+                {% else %}
+                    <div class="stream-logo" style="width: 40px;"></div>
+                {% endif %}
+                <h2 class="stream-title">{{ stream.name }}</h2>
+                <div class="stream-frame">
+                    <img src="{{ url_for('static', filename='frames/' + stream.frame_filename) }}" alt="Latest frame" onerror="this.style.display='none'">
+                </div>
+                <i class="fas fa-chevron-down" style="margin-left: 15px;"></i>
             </div>
-            <i class="fas fa-chevron-down" style="margin-left: 15px;"></i>
+            <div class="chart-content">
+                <div id="chart-{{ stream.id }}" class="chart">Loading chart...</div>
+            </div>
         </div>
-        <div class="chart-content">
-            <div id="chart-{{ stream.id }}" class="chart">Loading chart...</div>
-        </div>
-    </div>
     {% else %}
-        <p>No stream data found yet. Awaiting first check.</p>
+        <p style="color: var(--text);">No stream data found yet. Awaiting first check.</p>
     {% endfor %}
 </div>
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script>
     const loadedCharts = new Set();
+
+    function getPlotlyLayout(theme, streamName) {
+        const isDark = theme === "dark";
+        return {
+            title: {
+                text: `Stream Health: ${streamName}`,
+                font: { color: isDark ? "#e0e0e0" : "#222" }
+            },
+            paper_bgcolor: isDark ? "#1e1e1e" : "#ffffff",
+            plot_bgcolor: isDark ? "#1e1e1e" : "#ffffff",
+            xaxis: {
+                domain: [0.1, 0.9],
+                tickfont: { color: isDark ? "#ccc" : "#222" },
+                gridcolor: isDark ? "#333" : "#ddd"
+            },
+            yaxis: {
+                title: 'Resolution (p)',
+                titlefont: { color: 'rgb(55, 126, 184)' },
+                tickfont: { color: 'rgb(55, 126, 184)' },
+                gridcolor: isDark ? "#333" : "#ddd"
+            },
+            yaxis2: {
+                title: 'Frame Rate (fps)',
+                titlefont: { color: 'rgb(228, 26, 28)' },
+                tickfont: { color: 'rgb(228, 26, 28)' },
+                overlaying: 'y',
+                side: 'right'
+            },
+            yaxis3: {
+                title: 'Load Time (ms)',
+                titlefont: { color: 'rgb(77, 175, 74)' },
+                tickfont: { color: 'rgb(77, 175, 74)' },
+                overlaying: 'y',
+                side: 'left',
+                position: 0.0,
+                anchor: 'free'
+            },
+            legend: {
+                x: 0.5,
+                y: -0.2,
+                xanchor: 'center',
+                orientation: 'h',
+                font: { color: isDark ? "#ccc" : "#222" }
+            },
+            margin: { l: 100, r: 50, t: 50, b: 50 }
+        };
+    }
+
     function createChart(sourceId, streamName, chartDivId) {
-        if (loadedCharts.has(chartDivId)) return; // Don't reload chart
+        if (loadedCharts.has(chartDivId)) return;
         loadedCharts.add(chartDivId);
 
         fetch(`/data/${sourceId}/${streamName}`).then(response => response.json()).then(data => {
@@ -63,20 +174,39 @@
                 document.getElementById(chartDivId).innerHTML = '<p style="text-align:center; padding-top: 50px;">No data recorded.</p>';
                 return;
             }
+
             const resolutions = data.resolutions.map((res, i) => data.availability[i] ? res : null);
             const framerates = data.framerates.map((fr, i) => data.availability[i] ? fr : null);
             const load_times = data.load_times.map((lt, i) => data.availability[i] ? lt : null);
 
-            const resolutionTrace = { x: data.timestamps, y: resolutions, name: 'Resolution (p)', type: 'scatter', yaxis: 'y1', line: { color: 'rgb(55, 126, 184)' } };
-            const framerateTrace = { x: data.timestamps, y: framerates, name: 'Frame Rate (fps)', type: 'scatter', yaxis: 'y2', line: { color: 'rgb(228, 26, 28)' } };
-            const loadTimeTrace = { x: data.timestamps, y: load_times, name: 'Load Time (ms)', type: 'scatter', yaxis: 'y3', line: { color: 'rgb(77, 175, 74)' } };
-            const layout = {
-                title: `Stream Health: ${streamName}`, xaxis: { domain: [0.1, 0.9] },
-                yaxis: { title: 'Resolution (p)', titlefont: { color: 'rgb(55, 126, 184)' }, tickfont: { color: 'rgb(55, 126, 184)' } },
-                yaxis2: { title: 'Frame Rate (fps)', titlefont: { color: 'rgb(228, 26, 28)' }, tickfont: { color: 'rgb(228, 26, 28)' }, overlaying: 'y', side: 'right' },
-                yaxis3: { title: 'Load Time (ms)', titlefont: { color: 'rgb(77, 175, 74)' }, tickfont: { color: 'rgb(77, 175, 74)' }, overlaying: 'y', side: 'left', position: 0.0, anchor: 'free' },
-                legend: { x: 0.5, y: -0.2, xanchor: 'center', orientation: 'h' }, margin: { l: 100, r: 50, t: 50, b: 50 }
+            const resolutionTrace = {
+                x: data.timestamps,
+                y: resolutions,
+                name: 'Resolution (p)',
+                type: 'scatter',
+                yaxis: 'y1',
+                line: { color: 'rgb(55, 126, 184)' }
             };
+            const framerateTrace = {
+                x: data.timestamps,
+                y: framerates,
+                name: 'Frame Rate (fps)',
+                type: 'scatter',
+                yaxis: 'y2',
+                line: { color: 'rgb(228, 26, 28)' }
+            };
+            const loadTimeTrace = {
+                x: data.timestamps,
+                y: load_times,
+                name: 'Load Time (ms)',
+                type: 'scatter',
+                yaxis: 'y3',
+                line: { color: 'rgb(77, 175, 74)' }
+            };
+
+            const theme = document.documentElement.getAttribute("data-theme") || "light";
+            const layout = getPlotlyLayout(theme, streamName);
+
             Plotly.newPlot(chartDivId, [resolutionTrace, framerateTrace, loadTimeTrace], layout, {responsive: true});
         });
     }
@@ -86,7 +216,7 @@
         const icon = headerElement.querySelector('i');
         const isExpanded = chartContent.classList.toggle('expanded');
         icon.style.transform = isExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
-        
+
         if (isExpanded) {
             const chartDiv = chartContent.querySelector('.chart');
             const streamName = headerElement.querySelector('.stream-title').textContent;
