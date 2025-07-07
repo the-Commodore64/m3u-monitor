@@ -1,27 +1,14 @@
-# Docker Compose file for the M3U Stream Monitor
-version: '3.8'
-
 services:
   monitor:
     build: .
-
     container_name: m3u-monitor
-    # We map port 2029 on the host to port 2029 inside the container,
-    # where the Gunicorn server is listening.
     ports:
       - "2029:2029"
-
     volumes:
-      # We mount a local directory to '/app/data' inside the container.
-      # This ensures that the SQLite database (streams.db) is stored on your
-      # host machine and will persist even if the container is removed.
-      # UPDATE THIS!!
-      - /home/ubuntu/config/m3u-monitor/data:/app/data
-
+      - /data/docker/m3u-monitor-config:/app/data
     environment:
-      - TEST_RATE=1800      # Sets the check interval to 1,800 seconds (30 minutes).
+      - TEST_RATE=28800      # Sets the check interval to 1,800 seconds (30 minutes).
       - PORT=2029           # Sets the port the application runs on Must match the container port.
       - FFPROBE_TIMEOUT=30  # Sets the timeout for each stream check.
-      - TZ=COUNTRY/CITY     # Timezone
-
+      - TZ=US/Chicago     # Timezone
     restart: always
